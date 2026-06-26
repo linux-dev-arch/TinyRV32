@@ -28,4 +28,4 @@ It emulates riscv using very simplified C which makes it compatible with arduino
 * Program is stored in ram as long as there is power.(Using .noinit)
 ## Compiling apps
 * Move to project sdk dir
-* run make
+* run make(You need to have the riscv toolchain installed!)
