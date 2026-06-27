@@ -1,18 +1,37 @@
 #include <stdint.h>
+#include <stdbool.h>
 #ifndef RAMSIZE
 #define RAMSIZE 1024
 #endif
 uint8_t led=0;
-uint8_t uart=0x0;
+uint8_t uart_tx=0x0;
+uint8_t uart_rx=0x0;
 uint8_t ram[RAMSIZE] __attribute__((section(".noinit")));//arduino AVR specific to enable persistence of ram contents after resets.remove attribute for other mcu targets
+uint8_t uart_rx_buf[20];
+uint8_t uart_rx_head=0;
+uint8_t uart_rx_tail=0;
 uint32_t pc=0x80000000;
 uint32_t ram_base=0x80000000;
 uint32_t regs[32];
 uint8_t get_byte(uint32_t addr){
     if (addr>=ram_base){
-        return ram[addr-ram_base];
-    }
+        if (addr < sizeof(ram)+0x80000000){
+            return ram[addr-ram_base];
+        }
+        else{
+            return 0;
+            }
+        }
     else{
+        if (addr == 0x1000004){
+            if (uart_rx_head == uart_rx_tail) {
+                // Buffer empty
+                return 0;
+            }
+            uint8_t c = uart_rx_buf[uart_rx_tail];
+            uart_rx_tail = (uart_rx_tail + 1) % 20;
+            return c;
+        }
         return 0;
     }
 }
@@ -21,7 +40,7 @@ void write_byte(uint32_t addr,uint8_t value){
         ram[addr-ram_base] = value;
     }
     if(addr == 0x1000000){
-        uart=value;
+        uart_tx=value;
     }
     if(addr == 0x1000100){
         led=value;

@@ -21,6 +21,7 @@ print("Opening port!")
 time.sleep(1)
 ser=serial.Serial(PORT,115200,timeout=1)
 time.sleep(4)
+print("Programming!!!")
 with open(FILE,"rb") as f:
     b =f.read()
 ser.write(b)

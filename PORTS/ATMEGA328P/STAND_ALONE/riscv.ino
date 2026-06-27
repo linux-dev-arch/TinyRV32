@@ -8,6 +8,7 @@ int prog=2;
 int syspin=3;//for future update
 unsigned long cpu_freq=0;
 unsigned long instr_count=0;
+uint8_t pinmap[]={2,3,4,5,6,7,8,9,10,11,12,13};
 void print_ram(){
   Serial.print("[");
   for(int i =0;i<sizeof(ram);i++){
@@ -33,9 +34,6 @@ void upload(){
 }
 void setup() {
   // put your setup code here, to run once:
-  /*for(int i=0;i<sizeof(data);i++){
-    ram[i]=data[i];
-  }*/
   pinMode(prog,INPUT);
   pinMode(freq,INPUT);
   pinMode(syspin,INPUT);
@@ -67,13 +65,25 @@ if ((current_time-start)>2000){
   instr_count=0;
   start=current_time;
 }
+while (Serial.available()) {
+    uint8_t next = (uart_rx_head + 1) % 20;
+
+    // Only add if buffer isn't full
+    if (next != uart_rx_tail) {
+        uart_rx_buf[uart_rx_head] = Serial.read();
+        uart_rx_head = next;
+    } else {
+        // Buffer full, discard the byte
+        Serial.read();
+    }
+}
 if (digitalRead(freq)==0){
   Serial.print("CPU_FREQ=");
   Serial.println(cpu_freq);
 }
-if(uart != 0){
-    Serial.write(uart);
-    uart=0;
+if(uart_tx != 0){
+    Serial.write(uart_tx);
+    uart_tx=0;
   }
 if(led == 0xFF){
   digitalWrite(ledpin,1);
